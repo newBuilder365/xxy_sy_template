@@ -1,0 +1,124 @@
+import React from "react";
+import { connect } from "@sy/framework";
+import {
+    FormJsx,
+    FormCollapseNavigatebarExtend
+} from "@sy/platform/lib/components";
+import { model, utils } from "@sy/platform/lib/common/utils";
+import Comm from "~/project/common/common";
+
+const {
+    FormAttachmentItem,
+    FormAuditOpinion,
+    FormTableItem,
+    CollapsePF
+} = FormJsx;
+const { Panel } = CollapsePF;
+
+class Form extends React.PureComponent {
+    componentDidMount = () => {
+        this.initForm();
+    };
+
+    //初始化表单
+    initForm = () => {};
+
+    //更改表单的值
+    changeFormData = (item = {}) => {
+        const {
+            formConfig: { data },
+            dispatch
+        } = this.props;
+        model.setFormConfig(dispatch, {
+            namespace: "formConfig",
+            data: {
+                ...data,
+                ...item
+            }
+        });
+    };
+
+    tableInstance = null;
+
+    getTableInstance = tableInstance => {
+        this.tableInstance = tableInstance;
+    };
+
+    render() {
+        const {
+            formConfig,
+            dispatch,
+            formScrollContainerId,
+            dynamicFormProps: { formEditable },
+            workflowProps
+        } = this.props;
+        const { accordion, activeKey, collapseChangeEvent, data } = formConfig;
+        const { auditInfo, isShowComment, taskId } = workflowProps;
+        const modelProps = {
+            scrollContainerId: formScrollContainerId,
+            labelWidth: "0 0 120px",
+            namespace: "formConfig",
+            isDisabledFormItem: !formEditable,
+            isValidateTrigger: true,
+            isValidatedToScroll: false
+        };
+        // 附件属性
+        const AttachmentProps = {
+            primaryKey: data?.AttachmentPrimaryKey || data?.WFInstanceID,
+            isDisabledFormItem: false,
+            seedId: taskId
+        };
+        let formCollaspeWorkflowProps = { isWorkflowStart: false };
+        return (
+            <div>
+                <FormJsx modelProps={modelProps} workflowProps={workflowProps}>
+                    <CollapsePF
+                        accordion={accordion}
+                        activeKey={activeKey}
+                        onChange={collapseChangeEvent}
+                    >
+                        <Panel header="表单基本信息" key="baseInfo">
+                            {Comm.formBuild({
+                                //2列布局
+                                ColumnCount: 2,
+                                FormItems: []
+                            })}
+                        </Panel>
+                        <Panel header="附件" isWFAttachment={true}>
+                            <FormAttachmentItem
+                                showType="grid"
+                                uploadAttachmentProps={AttachmentProps}
+                            />
+                        </Panel>
+                        <Panel
+                            header="审批意见"
+                            isVisible={
+                                !utils.isNullOrEmpty(auditInfo) || isShowComment
+                            }
+                            isWFAuditOpinion={true}
+                        >
+                            <FormAuditOpinion auditProps={auditInfo} />
+                        </Panel>
+                    </CollapsePF>
+                </FormJsx>
+                <FormCollapseNavigatebarExtend
+                    //redux的dispatch属性
+                    dispatch={dispatch}
+                    //表单的formConfig属性
+                    formConfig={formConfig}
+                    //流程引擎的属性
+                    // workflowProps={workflowProps}
+                    workflowProps={formCollaspeWorkflowProps}
+                />
+            </div>
+        );
+    }
+}
+
+export default connect(({ current, formConfig, loading }) => {
+    return {
+        ...current,
+        formConfig,
+        loading
+    };
+})(Form);

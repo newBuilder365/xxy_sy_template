@@ -1,0 +1,87 @@
+import React, { PureComponent, Fragment } from "react";
+import { connect } from "@sy/framework";
+import { SearchBarPF } from "@sy/platform/lib/components";
+import { OrgTreeSelect, Export } from "@sy/platform/lib/extensions";
+import { Search } from "@sy/framework/lib/widget";
+import { model, utils } from "@sy/platform/lib/common/utils";
+
+class TableSearchBar extends PureComponent {
+    searchBarOperate = () => {
+        const {
+            tableConfig: {
+                tableInstance,
+                searchParams,
+                pagination: { current, pageSize }
+            }
+        } = this.props;
+        let params = { ...searchParams, currentPage: current, pageSize };
+        return (
+            <Export
+                table={tableInstance}
+                method="post"
+                fileName="局人力资源总库"
+                data={params}
+                url="wageApi/ArchiveInfo/GetArchivePageData"
+            />
+        );
+    };
+
+    searchItems = () => {
+        return [
+            {
+                editor: (
+                    <OrgTreeSelect
+                        defaultOrg={true}
+                        allowClear={false}
+                        includeDept={false}
+                        includeProject={false}
+                    />
+                ),
+                key: "CorpID",
+                label: "机构"
+            },
+            {
+                label: "关键字",
+                editor: <Search placeholder="输入姓名、身份证号查询" />,
+                key: "KeyWord",
+                searchEvent: "onSearch",
+                width: 300
+            }
+        ];
+    };
+
+    onSearch = data => {
+        const {
+            dispatch,
+            tableConfig: { namespace, searchParams }
+        } = this.props;
+        const { KeyWord = "", CorpID = "" } = data || {};
+        model.setTableConfig(dispatch, {
+            namespace,
+            searchParams: {
+                ...searchParams,
+                CorpID,
+                KeyWord: KeyWord.trim()
+            },
+            reload: true
+        });
+    };
+
+    render() {
+        return (
+            <SearchBarPF
+                onSearch={this.onSearch}
+                searchBarOperate={this.searchBarOperate()}
+                searchItems={this.searchItems()}
+            />
+        );
+    }
+}
+
+const mapStateToProps = state => {
+    return {
+        ...state
+    };
+};
+
+export default connect(mapStateToProps)(TableSearchBar);

@@ -1,0 +1,82 @@
+import { connect, withProvider } from "@sy/framework";
+import { message, Spin } from "@sy/framework/lib/widget";
+import { model, utils } from "@sy/platform/lib/common/utils";
+import { formModel, FormWrapper, WFFormPageDefault } from "@sy/platform/lib/components";
+import { Printable } from "@sy/platform/lib/extensions/print";
+import lodash from "lodash";
+import React, { Component } from "react";
+import Comm from "~/project/common/common";
+import Form from "../components/form";
+import FormToolBar from "../components/formToolBar";
+import currentModel from "../models";
+
+class EditForm extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        //编辑或查看流程表单时，外部组件调用的实例
+        if (typeof (props.onRef) === "function") {
+            props.onRef(this);
+        }
+    }
+
+    //页面id
+    pageId = Comm.GetGuid();
+
+
+    formSubmit = (callback, { buttonCode, buttonKey, buttonDirection }) => {
+        
+    };
+
+    handleSave = (formData, callback, buttonKey, extraData = {}) => {
+        
+    };
+
+    render() {
+        let { formPageId, formDesignProps, workflowProps, formScrollContainerId, dynamicFormProps, loading } = this.props;
+        if (formDesignProps) {
+            dynamicFormProps = { formEditable: true };
+        }
+        const jsx = (
+            <WFFormPageDefault
+                formDesignProps={formDesignProps}
+                workflowProps={workflowProps}
+                dynamicFormProps={dynamicFormProps}
+                formPageId={formPageId}
+                formScrollContainerId={formScrollContainerId}
+                formTitle="采购合同登记"
+                formToolBar={(
+                    <FormToolBar
+                        pageId={this.pageId}
+                        printInstance={this.Print}
+                    />
+                )}
+                workflowProps={workflowProps}
+            >
+                <Form
+                    tableRef={e => this.tableRef = e}
+                    formDesignProps={formDesignProps}
+                    workflowProps={workflowProps}
+                    dynamicFormProps={dynamicFormProps}
+                />
+                <Printable ref={(ref) => this.Print = ref} />
+            </WFFormPageDefault>
+        );
+        return (
+            <Spin
+                loading={loading}>{jsx}</Spin>
+        );
+    }
+}
+
+export default withProvider(connect(({ current, formConfig, loading }) => {
+    return {
+        ...current,
+        formConfig,
+        formInstance: formConfig.formInstance,
+        loading
+    };
+})(FormWrapper(EditForm)), [
+    { namespace: "formConfig", model: lodash.cloneDeep(formModel) },
+    { namespace: "paymentPlanFormConfig", model: lodash.cloneDeep(formModel) },
+    { namespace: "current", model: currentModel }
+]);

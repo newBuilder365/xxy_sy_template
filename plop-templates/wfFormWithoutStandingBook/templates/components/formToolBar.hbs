@@ -1,0 +1,80 @@
+import { connect } from "@sy/framework";
+import { utils } from "@sy/platform/lib/common/utils";
+import { ToolBar } from "@sy/platform/lib/components";
+import moment from "moment";
+import React from "react";
+import comm from "~/project/common/common";
+const { ToolbarItem } = ToolBar;
+
+//表单工具条
+class FormToolBar extends React.PureComponent {
+    //打印事件
+    printEvent = () => {
+        const {
+            dispatch,
+            formConfig: { data },
+            printInstance
+        } = this.props;
+        let copyData = data;
+        if (data.DataType === 0) {
+            copyData.DataTypes = "新数据";
+        } else {
+            copyData.DataTypes = "补录数据";
+        }
+
+        copyData.BillDate = moment(data.BillDate).format("YYYY-MM-DD");
+        copyData.OrgNames = copyData.OrgName;
+        copyData.CreateDeptNames = copyData.CreateDeptName;
+
+        var dataModel = { Master: [copyData] };
+
+        if (data != null) {
+            comm.GetPrintWorkflowAuditOpinion({
+                WFInstanceID: data.WFInstanceID
+            }).then(res => {
+                if (res.state) {
+                    printInstance.inherit({
+                        title: "采购合同登记打印",
+                        code: "CGHTDJ",
+                        dataModel,
+                        subReports: [res.printData]
+                    });
+                }
+            });
+        } else {
+            message.error("获取打印数据失败！");
+        }
+    };
+
+    render() {
+        const { pageId } = this.props;
+        const boxStyle = {
+            top: 15,
+            right: 10
+        };
+        const jsx = (
+            <ToolBar boxStyle={boxStyle}>
+                <ToolbarItem
+                    icon="question-circle"
+                    onClick={() => {
+                        utils.GoForHelp(pageId, "term");
+                    }}
+                    title="帮助"
+                />
+                <ToolbarItem
+                    icon="printer"
+                    onClick={this.printEvent}
+                    title="打印"
+                />
+            </ToolBar>
+        );
+        return jsx;
+    }
+}
+
+export default connect(({ current, formConfig }) => {
+    return {
+        ...current,
+        formConfig
+    };
+})(FormToolBar);
