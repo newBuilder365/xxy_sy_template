@@ -26,15 +26,71 @@ class EditForm extends React.PureComponent {
     //页面id
     pageId = Comm.GetGuid();
 
-    formSubmit = (callback, { buttonCode, buttonKey, buttonDirection }) => {};
+    formSubmit = (callback, { buttonCode, buttonKey, buttonDirection }) => {
+        const {
+            formConfig: { data, submit, extraData, tableInstances }
+        } = this.props;
+        if (buttonKey === "save" || buttonDirection === "backward") {
+            return this.handleSave(data, callback, buttonKey, extraData);
+        }
+        submit((formData, extraData) => {
+            let params = { formData, callback, buttonKey, extraData };
+            let tableInstanceArr = [];
+            for (let index in tableInstances) {
+                tableInstanceArr.push(tableInstances[index].tableInstance);
+            }
+            Comm.beforeSubmitValidateDtl(
+                tableInstanceArr,
+                this.handleSave,
+                params
+            );
+        });
+    };
 
-    handleSave = (formData, callback, buttonKey, extraData = {}) => {};
+    handleSave = (formData, callback, buttonKey, extraData = {}) => {
+        const { dispatch, formConfig } = this.props;
+        var fn = ({ data, state }) => {
+            if (state == -1) {
+                return;
+            }
+
+            if (!state) {
+                message.error("数据保存失败！");
+                return;
+            }
+            if (!utils.isNullOrEmpty(data)) {
+                model.setFormConfig(dispatch, {
+                    namespace: formConfig.namespace,
+                    data: {
+                        ...formData
+                    }
+                });
+                if (typeof callback === "function") {
+                    callback(formData, {
+                        ...extraData,
+                        extensionName: `${data.ContractNo}_${data.ContractName}`,
+                        extraParamColData: {
+                            extraParamString1: data.ContractNo
+                        }
+                    });
+                }
+            }
+        };
+
+        dispatch({
+            type: "current/saveBillData",
+            params: {
+                ...formData,
+                TempSave: buttonKey === "save" ? true : false
+            }
+        }).then(fn);
+    };
 
     render() {
         let {
             formPageId,
             formDesignProps,
-            workflowProps,
+            workflowProps = {},
             formScrollContainerId,
             dynamicFormProps,
             loading
@@ -67,7 +123,16 @@ class EditForm extends React.PureComponent {
                 <Printable ref={ref => (this.Print = ref)} />
             </WFFormPageDefault>
         );
-        return <Spin loading={loading}>{jsx}</Spin>;
+        return (
+            <Spin
+                loading={
+                    (loading && loading["current/getBillData"]) ||
+                    loading["current/saveBillData"]
+                }
+            >
+                {jsx}
+            </Spin>
+        );
     }
 }
 

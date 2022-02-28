@@ -2,10 +2,23 @@ import React from "react";
 import { connect } from "@sy/framework";
 import {
     FormJsx,
-    FormCollapseNavigatebarExtend
+    FormCollapseNavigatebarExtend,
+    FormModal
 } from "@sy/platform/lib/components";
+import {
+    DatePicker,
+    Input,
+    InputNumber,
+    message,
+    Search,
+    Button,
+    Alert
+} from "@sy/framework/lib/widget";
+import { DictSelect } from "@sy/platform/lib/extensions";
 import { model, utils } from "@sy/platform/lib/common/utils";
 import Comm from "@/project/common";
+import { modal } from "@sy/framework/lib/common";
+import { GetCustSupplier } from "@/project/extensions/custSupplier";
 
 const {
     FormAttachmentItem,
@@ -14,14 +27,34 @@ const {
     CollapsePF
 } = FormJsx;
 const { Panel } = CollapsePF;
+const { TextArea } = Input;
+const { RangePicker } = DatePicker;
 
 class Form extends React.PureComponent {
+    constructor(props) {
+        super(props);
+    }
     componentDidMount = () => {
-        this.initForm();
+        //this.initForm();
     };
 
     //初始化表单
-    initForm = () => {};
+    initForm = () => {
+        const { dispatch, workflowProps = {} } = this.props;
+        const {
+            formId,
+            wfInstanceId: wfInstanceID,
+            wfTemplateId
+        } = workflowProps;
+        dispatch({
+            type: "current/getBillData",
+            params: {
+                wfInstanceID,
+                formId,
+                wfTemplateId
+            }
+        });
+    };
 
     //更改表单的值
     changeFormData = (item = {}) => {
@@ -29,11 +62,11 @@ class Form extends React.PureComponent {
             formConfig: { data },
             dispatch
         } = this.props;
+        let newData = { ...data, ...item };
         model.setFormConfig(dispatch, {
             namespace: "formConfig",
             data: {
-                ...data,
-                ...item
+                ...newData
             }
         });
     };
@@ -44,19 +77,34 @@ class Form extends React.PureComponent {
         this.tableInstance = tableInstance;
     };
 
+    // 字典选择事件
+    handleDictChange = (id, name, _e, item, extraDatas = {}) => {
+        this.changeFormData({
+            [id]: item?.props?.record?.DictItemId || "",
+            [name]: item?.props?.record?.DictItemName || "",
+            ...extraDatas
+        });
+    };
+
     render() {
         const {
-            formConfig,
+            formConfig = {},
             dispatch,
             formScrollContainerId,
             dynamicFormProps: { formEditable },
-            workflowProps
+            workflowProps = {}
         } = this.props;
-        const { accordion, activeKey, collapseChangeEvent, data } = formConfig;
-        const { auditInfo, isShowComment, taskId } = workflowProps;
+        const {
+            accordion = {},
+            activeKey,
+            collapseChangeEvent,
+            data = {}
+        } = formConfig;
+        const { isShowComment, taskId } = workflowProps;
+        const auditInfo = workflowProps?.auditInfo || {};
         const modelProps = {
             scrollContainerId: formScrollContainerId,
-            labelWidth: "0 0 120px",
+            labelWidth: "0 0 130px",
             namespace: "formConfig",
             isDisabledFormItem: !formEditable,
             isValidateTrigger: true,
@@ -81,8 +129,22 @@ class Form extends React.PureComponent {
                             {Comm.formBuild({
                                 //2列布局
                                 ColumnCount: 2,
-                                FormItems: []
+                                FormItems: [
+                                    
+                                ]
                             })}
+                        </Panel>
+                        <Panel header="明细表信息">
+                            <FormTableItem
+                                tableProps={{
+                                    tableInstance: this
+                                        .PaymentPlanDtlTableInstance,
+                                    tableKey: "MaterialDtlKey",
+                                    tableName: "明细表信息"
+                                }}
+                            >
+                                
+                            </FormTableItem>
                         </Panel>
                         <Panel header="附件" isWFAttachment={true}>
                             <FormAttachmentItem
