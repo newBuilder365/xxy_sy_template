@@ -1,0 +1,138 @@
+import React from "react";
+import lodash from "lodash";
+import { connect, withProvider } from "@sy/framework";
+import { message, Spin } from "@sy/framework/lib/widget";
+import { model, utils } from "@sy/platform/lib/common/utils";
+import {
+    formModel,
+    FormWrapper,
+    WFFormPageDefault
+} from "@sy/platform/lib/components";
+import { Printable } from "@sy/platform/lib/extensions/print";
+import Comm from "@/project/common/common.js";
+import Form from "../components/form";
+import FormToolBar from "../components/formToolBar";
+import currentModel from "../models";
+
+class EditForm extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        //编辑或查看流程表单时，外部组件调用的实例
+        if (typeof props.onRef === "function") {
+            props.onRef(this);
+        }
+    }
+
+    //页面id
+    pageId = Comm.GetGuid();
+
+    formSubmit = (callback, { buttonCode, buttonKey, buttonDirection }) => {
+        const {
+            formConfig: { data, submit, extraData, tableInstances }
+        } = this.props;
+        submit((formData, extraData) => {
+            this.handleSave(formData, callback, buttonKey, extraData)
+        });
+    };
+
+    handleSave = (formData, callback, buttonKey, extraData = {}) => {
+        const { dispatch, formConfig } = this.props;
+        var fn = ({ data, state }) => {
+            if (state == -1) {
+                return;
+            }
+
+            if (!state) {
+                message.error("数据保存失败！");
+                return;
+            }
+            if (!utils.isNullOrEmpty(data)) {
+                model.setFormConfig(dispatch, {
+                    namespace: formConfig.namespace,
+                    data: {
+                        ...formData
+                    }
+                });
+                if (typeof callback === "function") {
+                    callback(formData, {
+                        ...extraData,
+                        extensionName: `${data.ContractNo}_${data.ContractName}`,
+                        extraParamColData: {
+                            extraParamString1: data.ContractNo
+                        }
+                    });
+                }
+            }
+        };
+
+        dispatch({
+            type: "current/saveBillData",
+            params: {
+                ...formData
+            }
+        }).then(fn);
+    };
+
+    render() {
+        let {
+            formPageId,
+            formDesignProps,
+            workflowProps = {},
+            formScrollContainerId,
+            dynamicFormProps,
+            loading
+        } = this.props;
+        if (formDesignProps) {
+            dynamicFormProps = { formEditable: true };
+        }
+        const jsx = (
+            <WFFormPageDefault
+                formDesignProps={formDesignProps}
+                workflowProps={workflowProps}
+                dynamicFormProps={dynamicFormProps}
+                formPageId={formPageId}
+                formScrollContainerId={formScrollContainerId}
+                formTitle=""
+                formToolBar={
+                    <FormToolBar
+                        pageId={this.pageId}
+                        printInstance={this.Print}
+                    />
+                }
+            >
+                <Form
+                    tableRef={e => (this.tableRef = e)}
+                    formDesignProps={formDesignProps}
+                    workflowProps={workflowProps}
+                    dynamicFormProps={dynamicFormProps}
+                />
+                <Printable ref={ref => (this.Print = ref)} />
+            </WFFormPageDefault>
+        );
+        return (
+            <Spin
+                loading={
+                    (loading && loading["current/getBillData"]) ||
+                    loading["current/saveBillData"]
+                }
+            >
+                {jsx}
+            </Spin>
+        );
+    }
+}
+
+export default withProvider(
+    connect(({ current, formConfig, loading }) => {
+        return {
+            ...current,
+            formConfig,
+            formInstance: formConfig.formInstance,
+            loading
+        };
+    })(FormWrapper(EditForm)),
+    [
+        { namespace: "formConfig", model: lodash.cloneDeep(formModel) },
+        { namespace: "current", model: currentModel }
+    ]
+);

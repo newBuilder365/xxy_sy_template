@@ -1,11 +1,11 @@
 module.exports = {
-    description: "创建一个分页台账",
+    description: "创建一个带台账的流程表单",
     prompts: [
         {
             type: "input", // 问题的类型
             name: "name", // 问题对应得到答案的变量名，可以在acitons中使用该变量
             message: "当前组件的名称", // 在命令行中的问题
-            default: "List"
+            default: "EditForm"
         },
         {
             type: "input", // 问题的类型
@@ -36,39 +36,53 @@ module.exports = {
         const actions = [
             {
                 type: "add", // 操作类型 添加文件
+                path: `src/project/{{path}}/${name}/views/wfEdit.js`, //添加的文件的路径
+                templateFile:
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/wfEdit.hbs` //模版文件的路径
+            },
+            {
+                type: "add", // 操作类型 添加文件
                 path: `src/project/{{path}}/${name}/views/index.js`, //添加的文件的路径
                 templateFile:
-                    useHooks ? "plop-templates/hookTemplates/view.hbs" :
-                        "plop-templates/standingBook/templates/views/index.hbs" //模版文件的路径
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/view.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path:
                     `src/project/{{path}}/${name}/components/tableSearchBar.js`, //添加的文件的路径
                 templateFile:
-                    useHooks ? "plop-templates/hookTemplates/tableSearchBar.hbs" :
-                        "plop-templates/standingBook/templates/components/tableSearchBar.hbs" //模版文件的路径
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/tableSearchBar.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path: `src/project/{{path}}/${name}/components/list.js`, //添加的文件的路径
                 templateFile:
-                    useHooks ? "plop-templates/hookTemplates/list.hbs" :
-                        "plop-templates/standingBook/templates/components/list.hbs" //模版文件的路径
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/list.hbs` //模版文件的路径
+            },
+            {
+                type: "add", // 操作类型 添加文件
+                path:
+                    `src/project/{{path}}/${name}/components/form.js`, //添加的文件的路径
+                templateFile:
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/form.hbs` //模版文件的路径
+            },
+            {
+                type: "add", // 操作类型 添加文件
+                path: `src/project/{{path}}/${name}/components/formToolBar.js`, //添加的文件的路径
+                templateFile:
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/formToolBar.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path: `src/project/{{path}}/${name}/services.js`, //添加的文件的路径
                 templateFile:
-                    useHooks ? "plop-templates/hookTemplates/services.hbs" :
-                        "plop-templates/standingBook/templates/services/index.hbs" //模版文件的路径
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/services.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path: `src/project/{{path}}/${name}/models.js`, //添加的文件的路径
                 templateFile:
-                    useHooks ? "plop-templates/hookTemplates/models.hbs" :
-                        "plop-templates/standingBook/templates/models/index.hbs" //模版文件的路径
+                    `plop-templates/${useHooks ? "hookTemplates" : "templates"}/models.hbs` //模版文件的路径
             }
         ];
 

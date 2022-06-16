@@ -1,0 +1,57 @@
+import React from "react";
+import lodash from "lodash";
+import { tableModel } from "@sy/platform/lib/components";
+import { connect, withProvider } from "@sy/framework";
+import { Layout, Spin } from "@sy/framework/lib/widget";
+import currentModel from "../models";
+import TableSearchBar from "../components/tableSearchBar";
+import List from "../components/list";
+
+const { Header, Content } = Layout;
+
+class {{ name }} extends React.PureComponent {
+
+  render() {
+    const { loading, listPageId } = this.props;
+    return (
+      <div
+        className="divPage ContentWrapper"
+        id={listPageId}
+      >
+        <div
+          className="ContentInner"
+        >
+          <Spin
+            loading={
+              loading &&
+              loading["current/getPageData"]
+            }
+          >
+            <Layout>
+              <Header>
+                <TableSearchBar />
+              </Header>
+              <Content>
+                <List />
+              </Content>
+            </Layout>
+          </Spin>
+        </div>
+      </div>
+
+    );
+  }
+}
+
+const mapStateToProps = ({ current, tableConfig, formConfig, loading }) => {
+  return {
+    ...current,
+    tableConfig,
+    loading
+  };
+};
+
+export default withProvider(connect(mapStateToProps)({{name}}), [
+  { namespace: "current", model: currentModel },
+  { namespace: "tableConfig", model: lodash.cloneDeep(tableModel) }
+]);

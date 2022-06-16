@@ -1,0 +1,65 @@
+import React, { memo } from "react";
+import { connect } from "@sy/framework";
+import { utils } from "@sy/platform/lib/common/utils";
+import { ToolBar } from "@sy/platform/lib/components";
+import comm from '@/project/common/common';
+const { ToolbarItem } = ToolBar;
+
+const FormToolBar = () => {
+
+    //打印事件
+    const printEvent = () => {
+        const { formConfig: { data }, printInstance } = this.props;
+        var dataModel = { Master: [data] };
+        if (data != null) {
+            comm.GetPrintWorkflowAuditOpinion({ WFInstanceID: data.WFInstanceID }, 'LWHTCSPS-TYSPJL').then(res => {
+                if (res.state) {
+                    let printData = res.printData
+                    printData.data.SignCustName = data?.SignCustName || ""
+                    printData.data.ContractTotalMoney = data?.ContractTotalMoney || 0
+                    printInstance.inherit({
+                        title: "劳务初始合同评审",
+                        code: "LWHTCSPS",
+                        dataModel,
+                        subReports: [
+                            res.printData
+                        ]
+                    });
+                }
+            })
+        } else {
+            message.error('获取打印数据失败！')
+        }
+    }
+
+    const goForHelp = () => utils.GoForHelp(pageId, "term")
+
+    const boxStyle = {
+        top: 15,
+        right: 10
+    }
+
+    return (
+        <ToolBar
+            boxStyle={boxStyle}
+        >
+            <ToolbarItem
+                icon="question-circle"
+                onClick={goForHelp}
+                title="帮助"
+            />
+            <ToolbarItem
+                icon="printer"
+                onClick={printEvent}
+                title="打印"
+            />
+        </ToolBar>
+    )
+}
+
+export default connect(({ current, formConfig }) => {
+    return {
+        ...current,
+        formConfig
+    };
+})(memo(FormToolBar));

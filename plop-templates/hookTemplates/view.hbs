@@ -1,0 +1,50 @@
+import React, { memo } from "react";
+import lodash from 'lodash';
+import { connect, withProvider } from '@sy/framework';
+import { Spin, Layout } from '@sy/framework/lib/widget';
+import { tableModel } from "@sy/platform/lib/components";
+
+import currentModel from '../models';
+import TableSearchBar from '../components/tableSearchBar';
+import List from "../components/list";
+const { Header, Content } = Layout;
+
+const {{name}} = ({ loading }) => {
+  return (
+    <div className="divPage ContentWrapper">
+      <div className="ContentInner">
+        <Spin
+          loading={
+            loading &&
+            loading['current/getPageData'] ||
+            loading['current/delete']
+          }
+        >
+          <Layout>
+            <Header>
+              <TableSearchBar />
+            </Header>
+            <Content>
+              <List />
+            </Content>
+          </Layout>
+        </Spin>
+      </div>
+    </div>
+  )
+}
+
+const mapStateToProps = ({ current, loading }) => {
+  return {
+    ...current,
+    loading
+  };
+};
+
+export default withProvider(
+  connect(mapStateToProps)(memo({{name}})),
+  [
+    { namespace: "current", model: currentModel },
+    { namespace: "tableConfig", model: lodash.cloneDeep(tableModel) }
+  ]
+);

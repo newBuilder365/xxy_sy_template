@@ -1,0 +1,30 @@
+import React, { memo } from "react";
+import { connect } from "@sy/framework";
+import { TablePF } from "@sy/platform/lib/components";
+
+
+const List = () => {
+    const columns = [];
+    const modelProps = {
+        actionType: "",
+        columns: columns,
+        isGetTableInstance: true,
+        reload: false,
+        rowKey: "",
+        showPagination: true,
+        tableId: "tableId"
+    };
+
+    return (
+        <div className={`divComponent`}>
+            <TablePF modelProps={modelProps} />
+        </div>
+    )
+}
+
+export default connect(({ current, tableConfig }) => {
+    return {
+        ...current,
+        tableConfig
+    };
+})(memo(List));

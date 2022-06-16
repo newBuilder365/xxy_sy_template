@@ -1,0 +1,100 @@
+import React from "react";
+import { connect } from '@sy/framework';
+import { SearchBarPF, DataStatusSelect } from "@sy/platform/lib/components";
+import CostValiPublishButton from '~/project/extensions/costValiPublishButton';
+import { Export } from "@sy/platform/lib/extensions/excelHelper";
+import { OrgTreeSelect } from "@sy/platform/lib/extensions";
+import { Search } from "@sy/framework/lib/widget";
+import { model } from "@sy/platform/lib/common/utils";
+
+const TableSearchBar = (props) => {
+
+  const { tableConfig, dispatch, loading } = props;
+  const { searchParams, tableInstance, pagination, namespace } = tableConfig;
+
+  const searchBarOperate = () => {
+    const params = { ...searchParams, ...pagination }
+    return (
+      <div>
+        <Export
+          table={tableInstance}
+          fileName="劳务合同初始评审"
+          method="post"
+          data={params}
+          url='cloudApi/LabourContract/GetPageData'
+        />
+        <CostValiPublishButton
+          closePopupCallback={tableConfig && tableConfig.doReload}
+          formTemplateCode="28 LWHT"
+          loading={loading.global}
+        />
+      </div>
+    )
+  };
+
+  const searchItems = () => {
+    return (
+      [
+        {
+          editor: (
+            <OrgTreeSelect
+              defaultOrg={true}
+              includeDept={false}
+              allowClear={false}
+            />),
+          key: "OrgID",
+          label: "机构"
+        },
+        {
+          editor: (
+            <DataStatusSelect showStatusType='wfValid' />
+          ),
+          label: "流程状态",
+          key: "DataStatus"
+        },
+        {
+          defaultValue: "",
+          editor: (
+            <Search
+              placeholder="输入关键字"
+            />
+          ),
+          key: "KeyWord",
+          valuePropName: "checked",
+          searchEvent: "onSearch"
+        },
+      ]
+    );
+  };
+
+  const onSearch = (data) => {
+    const { OrgID = "", KeyWord = "", DataStatus } = data || {};
+    model.setTableConfig(dispatch, {
+      namespace,
+      searchParams: {
+        ...searchParams,
+        KeyWord: KeyWord.replace(/(^\s*)|(\s*$)/g, ""),
+        DataStatus,
+        OrgID,
+      },
+      reload: true
+    });
+
+  };
+
+  return (
+    <SearchBarPF
+      onSearch={onSearch}
+      searchBarOperate={searchBarOperate()}
+      searchItems={searchItems()}
+    />
+  )
+}
+
+const mapStateToProps = (state) => {
+  return {
+    ...state
+  }
+}
+
+export default connect(mapStateToProps)(React.memo(TableSearchBar));

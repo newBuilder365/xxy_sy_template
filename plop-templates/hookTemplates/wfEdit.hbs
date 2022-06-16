@@ -1,0 +1,121 @@
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, memo } from "react";
+import lodash from 'lodash';
+import { connect, withProvider } from "@sy/framework";
+import { formModel, FormWrapper, WFFormPageDefault } from "@sy/platform/lib/components";
+import { Printable } from "@sy/platform/lib/extensions/print";
+import { Spin, message } from '@sy/framework/lib/widget';
+import { utils } from '@sy/platform/lib/common/utils';
+import currentModel from "../models";
+import Form from '../components/form';
+import FormToolBar from "../components/formToolBar";
+
+const EditForm = forwardRef((props, ref) => {
+  let {
+    dynamicFormProps,
+    formPageId,
+    formDesignProps,
+    workflowProps,
+    formScrollContainerId,
+    loading,
+    onRef
+  } = props;
+  const pageRef = useRef()
+
+  const Print = useRef()
+
+  const pageId = ''
+
+  useEffect(() => {
+    pageRef.current = props
+  })
+
+  useImperativeHandle(onRef, () => {
+    return {
+      formSubmit
+    }
+  }, []);
+
+  if (formDesignProps) {
+    workflowProps = { fieldAuthority: [] };
+    dynamicFormProps = { formEditable: true }
+  }
+  //提交表单数据
+  const formSubmit = (callback, { buttonKey, buttonDirection }) => {
+    const { dispatch, formConfig: { submit } } = pageRef.current;
+    submit((formData, extraData) => {
+      var fn = ({ data, state }) => {
+        if (!state) {
+          message.error("数据保存失败！");
+          return;
+        }
+        //暂存或者提交后将明细表里的父级IsModify设为false,下次暂存就不存了
+        if (typeof (callback) === "function") {
+          callback({ ...formData, ContractDtl: [], ContractMaterialDtl: [], initContractDtl: [] }, {
+            ...extraData,
+            extensionName: `${formData.ContractNumber}_${formData.ContractName}`,
+            extraParamColData: {
+              extraParamString1: formData.ContractNumber
+            }
+          });
+        }
+      }
+      dispatch({
+        type: "current/saveContract",
+        params: {
+          ...formData
+        }
+      }).then(fn);
+    })
+  }
+
+  const jsx = (
+    <WFFormPageDefault
+      dynamicFormProps={dynamicFormProps}
+      formDesignProps={formDesignProps}
+      formPageId={formPageId}
+      formScrollContainerId={formScrollContainerId}
+      formTitle="劳务合同初始评审"
+      formToolBar={(
+        <FormToolBar
+          pageId={pageId}
+          printInstance={Print.current}
+        />
+      )}
+      workflowProps={workflowProps}
+    >
+      <Form
+        formDesignProps={formDesignProps}
+        workflowProps={workflowProps}
+        dynamicFormProps={dynamicFormProps}
+      />
+      <Printable ref={Print} />
+    </WFFormPageDefault>
+  );
+
+  return (
+    <Spin loading={
+      loading &&
+      loading["current/getContractData"]
+    }>
+      {jsx}
+    </Spin>
+  )
+})
+
+const mapStateToProps = ({ current, formConfig, loading }) => {
+  return {
+    ...current,
+    formConfig,
+    formInstance: formConfig.formInstance,
+    loading
+  }
+}
+
+export default withProvider(
+  connect(mapStateToProps)(FormWrapper(memo(EditForm))),
+  [
+    { namespace: "current", model: currentModel },
+    { namespace: "formConfig", model: lodash.cloneDeep(formModel) }
+  ]
+);
+
