@@ -1,0 +1,97 @@
+import React from 'react';
+import { connect } from '@sy/framework';
+import { FormJsx, FormCollapseNavigatebarExtend } from "@sy/platform/lib/components";
+import { model } from '@sy/platform/lib/common/utils';
+import Comm from '@/project/common/common';
+const { FormTableItem, CollapsePF } = FormJsx;
+const { Panel } = CollapsePF;
+
+class Form extends React.Component {
+
+    componentDidMount = () => {
+        this.initForm()
+    }
+
+    //初始化表单数据
+    initForm = () => {
+        const { extraProps, dispatch } = this.props;
+        const { businessID = "" } = extraProps;
+    }
+
+    //改变表单数据
+    changeFormData = (item = {}, extraItem = {}) => {
+        const { formConfig: { data, extraData }, dispatch } = this.props;
+        model.setFormConfig(dispatch, {
+            namespace: "formConfig",
+            data: {
+                ...data,
+                ...item
+            },
+            extraData: {
+                ...extraData,
+                ...extraItem
+            }
+        })
+    }
+    tableInstance = null
+
+    getTableInstance = (tableInstance) => {
+        this.tableInstance = tableInstance;
+    }
+
+    render() {
+        const { workflowProps = {}, formConfig, dispatch, formScrollContainerId, extraProps, loading } = this.props;
+        const { type } = extraProps;
+        const { accordion, activeKey, collapseChangeEvent } = formConfig;
+        let modelProps = {
+                scrollContainerId: formScrollContainerId,
+                labelWidth: '0 0 130px',
+                namespace: 'formConfig',
+                isDisabledFormItem: type === 'view',
+        }
+        let formCollaspeWorkflowProps = { isWorkflowStart: false };
+        return (
+            <div>
+                <FormJsx
+                    modelProps={modelProps}
+                    workflowProps={workflowProps}
+                >
+                    <CollapsePF
+                        accordion={accordion}
+                        activeKey={activeKey}
+                        onChange={collapseChangeEvent}
+                    >
+                        <Panel
+                            header="基本信息"
+                            key="baseInfo">
+                            {
+                                Comm.formBuild({
+                                    //2列布局
+                                    ColumnCount: 2,
+                                    FormItems: []
+                                })
+                            }
+                        </Panel>
+                    </CollapsePF>
+                </FormJsx>
+                <FormCollapseNavigatebarExtend
+                    //redux的dispatch属性
+                    dispatch={dispatch}
+                    //表单的formConfig属性
+                    formConfig={formConfig}
+                    //流程引擎的属性
+                    // workflowProps={workflowProps}
+                    workflowProps={formCollaspeWorkflowProps}
+                />
+            </div>
+        )
+    }
+}
+
+export default connect(({ current, formConfig, loading }) => {
+    return {
+        ...current,
+        formConfig,
+        loading
+    };
+})(Form);

@@ -1,0 +1,90 @@
+import React from "react";
+import lodash from "lodash";
+import moment from "moment";
+import { connect, withProvider } from "@sy/framework";
+import { formModel, WFFormPageDefault } from "@sy/platform/lib/components";
+import { utils } from "@sy/platform/lib/common/utils";
+import { Spin } from "@sy/framework/lib/widget";
+import currentModel from "./models";
+import Form from "./components/form";
+
+class UnWfEdit extends React.PureComponent {
+    componentDidMount = () => {
+        const { onRef } = this.props;
+        if (typeof onRef === "function") {
+            onRef(this);
+        }
+    };
+
+    submit = (callback) => {
+        const {
+            formConfig: { data, submit },
+            dispatch,
+        } = this.props;
+        submit(() => {
+            dispatch({
+                type: "current/saveBillData",
+                params: {
+                    ...data,
+                    BonusTableMonth: utils.isNullOrEmpty(data.BonusTableMonth)
+                        ? ""
+                        : `${moment(data.BonusTableMonth).format("YYYYMMDD").slice(0, 6)}`,
+                    BelongMonth: utils.isNullOrEmpty(data.BelongMonth)
+                        ? ""
+                        : `${moment(data.BelongMonth).format("YYYYMMDD").slice(0, 6)}`,
+                },
+            }).then((res) => {
+                if (res.state) {
+                    callback();
+                }
+            });
+        });
+    };
+
+    render() {
+        const { formPageId, formScrollContainerId, extraProps, loading } =
+            this.props;
+        let dynamicFormProps = {
+            closeEvent:
+                window.g_config.get("wfForm")?.showType === 0
+                    ? null
+                    : this.handleCancel,
+        };
+        return (
+            <Spin
+                loading={
+                    (loading && loading["current/getBillData"]) ||
+                    loading["current/saveBillData"] ||
+                    loading["current/getTaxDepartment"] ||
+                    loading["current/getBonusListApprovalDtl"] ||
+                    loading["current/getBranchArchive"] ||
+                    loading["current/readTaxData"] ||
+                    loading["current/clearTaxData"]
+                }
+            >
+                <WFFormPageDefault
+                    formTitle="奖金单"
+                    formPageId={formPageId}
+                    //表单滚动条容器Id
+                    formScrollContainerId={formScrollContainerId}
+                    dynamicFormProps={dynamicFormProps}
+                >
+                    <Form extraProps={extraProps} />
+                </WFFormPageDefault>
+            </Spin>
+        );
+    }
+}
+
+const mapStateToProps = ({ current, formConfig, loading }) => {
+    return {
+        ...current,
+        formConfig,
+        loading,
+    };
+};
+
+export default withProvider(connect(mapStateToProps)(UnWfEdit), [
+    { namespace: "current", model: lodash.cloneDeep(currentModel) },
+    { namespace: "formConfig", model: lodash.cloneDeep(formModel) },
+]);
