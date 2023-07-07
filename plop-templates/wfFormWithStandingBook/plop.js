@@ -33,54 +33,57 @@ module.exports = {
         const characters = [...name];
         characters[0] = characters[0].toLocaleLowerCase();
         name = characters.join("");
+        let path = data.path
+        path = path.replace(/\\/g, '/');
+        const finalPath = `${path}/${name}`
         const actions = [
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/views/wfEdit.js`, //添加的文件的路径
+                path: `${finalPath}/views/wfEdit.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/wfEdit.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/views/index.js`, //添加的文件的路径
+                path: `${finalPath}/views/index.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/view.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path:
-                    `src/project/{{path}}/${name}/components/tableSearchBar.js`, //添加的文件的路径
+                    `${finalPath}/components/tableSearchBar.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/tableSearchBar.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/components/list.js`, //添加的文件的路径
+                path: `${finalPath}/components/list.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/list.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
                 path:
-                    `src/project/{{path}}/${name}/components/form.js`, //添加的文件的路径
+                    `${finalPath}/components/form.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/form.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/components/formToolBar.js`, //添加的文件的路径
+                path: `${finalPath}/components/formToolBar.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/formToolBar.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/services.js`, //添加的文件的路径
+                path: `${finalPath}/services.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/services.hbs` //模版文件的路径
             },
             {
                 type: "add", // 操作类型 添加文件
-                path: `src/project/{{path}}/${name}/models.js`, //添加的文件的路径
+                path: `${finalPath}/models.js`, //添加的文件的路径
                 templateFile:
                     `plop-templates/${useHooks ? "hookTemplates" : "templates"}/models.hbs` //模版文件的路径
             }

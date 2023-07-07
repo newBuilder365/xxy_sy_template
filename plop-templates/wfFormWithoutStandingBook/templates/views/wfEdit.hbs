@@ -91,7 +91,7 @@ class EditForm extends React.PureComponent {
             formPageId,
             formDesignProps,
             workflowProps = {},
-            formScrollContainerId,
+            formConfig: { scrollContainerId },
             dynamicFormProps,
             loading
         } = this.props;
@@ -104,7 +104,7 @@ class EditForm extends React.PureComponent {
                 workflowProps={workflowProps}
                 dynamicFormProps={dynamicFormProps}
                 formPageId={formPageId}
-                formScrollContainerId={formScrollContainerId}
+                formScrollContainerId={scrollContainerId}
                 formTitle="采购合同登记"
                 formToolBar={
                     <FormToolBar

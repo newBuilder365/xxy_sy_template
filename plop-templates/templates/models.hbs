@@ -1,4 +1,4 @@
-import services from "../services";
+import services from "./services";
 
 export default {
     state: {
@@ -6,8 +6,6 @@ export default {
         listPageId: `div{{name}}ListPage_${new Date().getTime()}`,
         //表单页面Id
         formPageId: `div{{name}}FormPage_${new Date().getTime()}`,
-        //表单滚动容器Id
-        formScrollContainerId: `div{{name}}ScrollContainer_${new Date().getTime()}`
     },
 
     reducers: {

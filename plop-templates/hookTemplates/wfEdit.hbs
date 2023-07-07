@@ -15,7 +15,7 @@ const EditForm = forwardRef((props, ref) => {
     formPageId,
     formDesignProps,
     workflowProps,
-    formScrollContainerId,
+    formConfig: { scrollContainerId },,
     loading,
     onRef
   } = props;
@@ -73,7 +73,7 @@ const EditForm = forwardRef((props, ref) => {
       dynamicFormProps={dynamicFormProps}
       formDesignProps={formDesignProps}
       formPageId={formPageId}
-      formScrollContainerId={formScrollContainerId}
+      formScrollContainerId={scrollContainerId}
       formTitle="劳务合同初始评审"
       formToolBar={(
         <FormToolBar
